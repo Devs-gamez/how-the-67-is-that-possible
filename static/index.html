@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rel Zone</title>
+<style>
+:root{--bg:#07090f;--panel:#0e1220;--panel2:#151a2c;--text:#e8ecf7;--muted:#8a93ad;--line:#232a42;--accent:#5ee0ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f1f3fa;--panel:#fff;--panel2:#e8ebf6;--text:#14182a;--muted:#5d6682;--line:#d3d8ea}}
+:root[data-theme="light"]{--bg:#f1f3fa;--panel:#fff;--panel2:#e8ebf6;--text:#14182a;--muted:#5d6682;--line:#d3d8ea}
+:root[data-theme="dark"]{--bg:#07090f;--panel:#0e1220;--panel2:#151a2c;--text:#e8ecf7;--muted:#8a93ad;--line:#232a42}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+body.cursive h1,body.cursive h2,body.cursive .brand{font-family:"Brush Script MT","Segoe Script",cursive;letter-spacing:.02em}
+#fog{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#glow{position:fixed;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;pointer-events:none;z-index:1;
+background:radial-gradient(circle,color-mix(in srgb,var(--accent) 28%,transparent),transparent 65%);left:-999px;top:-999px}
+body.perf #fog,body.perf #glow{display:none}
+#app{position:relative;z-index:2;display:flex;height:100%}
+nav{width:76px;background:color-mix(in srgb,var(--panel) 88%,transparent);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px}
+.brand{font-weight:700;color:var(--accent);font-size:15px;margin-bottom:10px}
+nav button{width:60px;background:none;border:0;color:var(--muted);padding:10px 0;border-radius:12px;cursor:pointer;font:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button span{font-size:20px}
+nav button:hover{background:var(--panel2);color:var(--text)}
+nav button.on{background:var(--panel2);color:var(--accent)}
+nav .sp{flex:1}
+main{flex:1;overflow:auto;padding:28px;min-width:0}
+.view{display:none;max-width:900px;margin:0 auto}.view.on{display:block}
+.hero{text-align:center;padding:9vh 0 4vh}
+h1{font-size:clamp(48px,12vw,96px);margin:0;color:var(--accent);text-shadow:0 0 40px color-mix(in srgb,var(--accent) 45%,transparent);font-weight:300;letter-spacing:.08em}
+.hero p{color:var(--muted);margin:8px 0 22px}
+.search{display:flex;gap:8px;max-width:480px;margin:0 auto}
+input[type=text]{flex:1;background:var(--panel);border:1px solid var(--line);color:var(--text);padding:12px 16px;border-radius:999px;font:inherit;outline:none;min-width:0}
+input[type=text]:focus{border-color:var(--accent)}
+.btn{background:var(--accent);color:#04121a;border:0;padding:11px 20px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--panel2);color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:.15s;text-align:left;color:inherit;font:inherit}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card .e{font-size:30px}.card b{display:block;margin-top:8px}.card small{color:var(--muted)}
+h2{margin:0 0 6px;font-weight:400}
+.sub{color:var(--muted);margin:0 0 18px}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:16px}
+canvas#snake{background:var(--bg);border-radius:10px;max-width:100%;touch-action:none}
+.pad{display:grid;grid-template-columns:repeat(3,52px);gap:6px}.pad button{height:46px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:18px;cursor:pointer}
+.mem{display:grid;grid-template-columns:repeat(4,70px);gap:8px}
+.mem button{height:70px;font-size:30px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+.mem button.up{background:var(--panel);border-color:var(--accent)}.mem button.done{opacity:.35}
+.ttt{display:grid;grid-template-columns:repeat(3,80px);gap:6px}
+.ttt button{height:80px;font-size:36px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--accent);cursor:pointer}
+.keys{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.key{width:56px;height:140px;background:var(--panel2);border:1px solid var(--line);border-radius:0 0 10px 10px;color:var(--muted);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;cursor:pointer;user-select:none;font-size:12px}
+.key.hit{background:var(--accent);color:#04121a}
+.row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.row small{display:block;color:var(--muted)}
+.sw{appearance:none;width:42px;height:24px;background:var(--panel2);border:1px solid var(--line);border-radius:99px;position:relative;cursor:pointer;flex:none}
+.sw:after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.15s}
+.sw:checked{background:color-mix(in srgb,var(--accent) 35%,var(--panel2))}.sw:checked:after{left:20px;background:var(--accent)}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:8px;border-radius:8px;font:inherit}
+input[type=color]{border:0;width:40px;height:30px;background:none;padding:0;cursor:pointer}
+.status{color:var(--muted);min-height:20px}
+.chat{display:flex;flex-direction:column;height:min(62vh,560px);background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+#log{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:14px;white-space:pre-wrap;line-height:1.45;overflow-wrap:anywhere}
+.msg.me{align-self:flex-end;background:var(--accent);color:#04121a}
+.msg.bot{align-self:flex-start;background:var(--panel2)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
+.chips button{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:6px 12px;border-radius:99px;cursor:pointer;font:inherit;font-size:13px}
+.chips button:hover{border-color:var(--accent)}
+.compose{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+@media(max-width:560px){nav{width:58px}nav button{width:50px;font-size:10px}main{padding:16px}.mem{grid-template-columns:repeat(4,62px)}.mem button{height:62px}.key{width:40px}}
+#web{max-width:none}
+#web.on{display:flex;flex-direction:column;gap:8px;height:calc(100vh - 56px);height:calc(100dvh - 56px)}
+.wbar{display:flex;gap:8px}
+.wbar .btn{padding:10px 16px}
+#web iframe{flex:1;min-height:0;width:100%;border:1px solid var(--line);border-radius:12px;background:#fff}
+#web iframe[hidden]{display:none}
+.soundgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-top:20px}
+.sound{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:left;color:var(--text);font:inherit;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:12px}
+.sound:hover{border-color:var(--accent);transform:translateY(-2px)}
+.sound .si{font-size:26px}.sound b{display:block}.sound small{color:var(--muted)}
+.sound.playing{border-color:var(--accent);box-shadow:0 0 20px color-mix(in srgb,var(--accent) 22%,transparent)}
+.soundtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:16px 0}.soundtools input{flex:1;min-width:180px}
+nav button{position:relative}
+.dot{position:absolute;top:6px;right:9px;width:10px;height:10px;border-radius:50%;background:#ff5d6c;box-shadow:0 0 0 2px var(--panel)}
+.dot[hidden]{display:none}
+#clog{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.cmsg{max-width:88%;padding:8px 12px;border-radius:12px;background:var(--panel2);align-self:flex-start;line-height:1.4;overflow-wrap:anywhere}
+.cmsg.me{align-self:flex-end;background:color-mix(in srgb,var(--accent) 24%,var(--panel2))}
+.cmsg .ch{display:flex;gap:8px;align-items:baseline;font-size:13px}
+.cmsg .ch small{color:var(--muted);font-size:11px}
+.cmsg .cb{white-space:pre-wrap}
+.csys{align-self:center;color:var(--muted);font-size:12px;text-align:center}
+.cnickrow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin:0 0 10px}
+.cnickrow input{flex:none;width:160px;padding:7px 14px}
+#conline{font-size:14px;font-weight:400;color:var(--muted)}
+.dot.ok{background:#3ddc84}
+.btn.danger{background:#ff5d6c;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.cpanel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px 18px 14px;margin-bottom:14px}
+.cpanel h3{margin:14px 0 4px;font-size:15px;font-weight:600}
+.cpanel .row{border-bottom:1px solid var(--line)}
+.cnickrow2{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;padding:10px 0 2px}
+.cnickrow2 input{flex:none;width:160px;padding:7px 14px}
+.prow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.prow:first-of-type{border-top:0}
+.prow .pn{flex:1;overflow-wrap:anywhere}
+.prow small{color:var(--muted)}
+.prow .btn{padding:7px 16px;font-size:14px}
+.cempty{color:var(--muted);font-size:13px;padding:8px 0}
+.roomjoin{display:flex;gap:8px;margin:8px 0 6px}
+.roomjoin input{flex:1}
+#callmsg{display:block;min-height:20px;color:var(--accent);margin:0 0 8px;font-size:14px}
+.callhead{display:flex;gap:10px;align-items:baseline;margin-bottom:6px}
+.callhead b{font-size:17px}
+#callnote{color:var(--muted);font-size:13px;min-height:18px;margin-bottom:8px}
+.ctiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.ctile{position:relative;aspect-ratio:4/3;background:var(--panel2);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:box-shadow .12s}
+.ctile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;background:#000}
+.ctile.cam video{opacity:1}
+.ctile[data-id="me"].cam video{transform:scaleX(-1)}
+.ctile .avatar{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;background:color-mix(in srgb,var(--accent) 30%,var(--panel));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px}
+.ctile.cam .avatar{display:none}
+.ctile .clabel{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;align-items:center;background:rgba(0,0,0,.55);color:#fff;border-radius:99px;padding:3px 10px;font-size:12px;max-width:calc(100% - 16px)}
+.ctile .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctile .cstate{position:absolute;top:8px;left:0;right:0;text-align:center;font-size:12px;color:var(--muted)}
+.ctile.cam .cstate{color:#fff;text-shadow:0 1px 3px #000}
+.ctile.speaking{box-shadow:0 0 0 3px var(--accent)}
+.ccontrols{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.incoming{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;background:var(--panel);border:2px solid var(--accent);border-radius:18px;padding:12px 16px;display:flex;gap:16px;align-items:center;box-shadow:0 10px 40px rgba(0,0,0,.28);max-width:calc(100vw - 24px);animation:ringpulse 1.2s infinite}
+.incoming[hidden]{display:none}
+.incoming small{color:var(--muted)}
+.incbtns{display:flex;gap:8px}
+@keyframes ringpulse{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 35%,transparent),0 10px 40px rgba(0,0,0,.28)}}
+.vmpick{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.vmpick select{max-width:240px}
+.vmfile{cursor:pointer;padding:9px 16px;font-size:14px;display:inline-block}
+.vmnote{color:var(--muted);font-size:13px;padding:10px 0 4px}
+#vmwrap{background:#000;border:1px solid var(--line);border-radius:12px;overflow:auto;display:flex;justify-content:center;min-height:260px}
+#vmscreen{cursor:pointer;outline:2px solid transparent;transition:outline-color .12s}
+#vmscreen.vmfocus{outline-color:var(--accent)}
+#vmscreen canvas{max-width:100%;height:auto}
+#vmscreen>div{color:#ddd;padding:4px}
+body.vmbusy #fog,body.vmbusy #glow{display:none}
+.discord{position:fixed;right:18px;bottom:16px;z-index:5;max-width:calc(100vw - 110px);background:color-mix(in srgb,var(--panel) 90%,transparent);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;color:var(--muted);line-height:1.35;word-break:break-word}
+.discord a{color:color-mix(in srgb,var(--accent) 60%,var(--text));font-weight:600;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.discord a:hover{text-decoration-thickness:2px}
+@media(max-width:700px){.discord{position:static;margin:22px auto 8px;width:fit-content;max-width:100%;text-align:center}}
+</style>
+</head>
+<body>
+<canvas id="fog"></canvas><div id="glow"></div>
+<div id="app">
+<nav>
+  <div class="brand">rel zone</div>
+  <button data-v="home" class="on"><span>⌂</span>home</button>
+  <button data-v="games"><span>🎮</span>games</button>
+  <button data-v="music"><span>🎹</span>music</button>
+  <button data-v="sounds"><span>🔊</span>sounds</button>
+  <button data-v="ai"><span>✨</span>ai</button>
+  <button data-v="web"><span>🌐</span>web</button>
+  <button data-v="chat"><span>💬</span>chat<i class="dot" id="cdot" hidden></i></button>
+  <button data-v="call" id="callnav"><span>📞</span>calls<i class="dot" id="calldot" hidden></i></button>
+  <button data-v="vm"><span>🖥️</span>vm</button>
+  <div class="sp"></div>
+  <button data-v="settings"><span>⚙</span>settings</button>
+</nav>
+<main>
+<section class="view on" id="home">
+  <div class="hero"><h1>Rel Zone</h1><p id="greet">welcome back</p>
+    <div class="search"><input id="q" type="text" placeholder="search the hub…" autocomplete="off"><button class="btn" id="go">go</button></div>
+  </div>
+  <div class="grid" id="tiles"></div>
+  <div class="discord">join the Discord: <a href="https://discord.gg/jEmDJQFj45" target="_blank" rel="noopener noreferrer">https://discord.gg/jEmDJQFj45</a></div>
+</section>
+
+<section class="view" id="games">
+  <h2>games</h2><p class="sub">100+ real browser games · each one opens inside Rel Zone through the proxy.</p>
+  <div class="grid" id="gamelist"></div>
+  <div class="stage" id="stage" hidden></div>
+</section>
+
+<section class="view" id="sounds">
+  <h2>meme soundboard 🔊</h2><p class="sub">31 meme sounds — click a button to play one.</p>
+  <div class="soundtools"><input id="soundq" type="text" placeholder="search sounds…" autocomplete="off"><button class="btn ghost" id="stopSound">■ stop</button></div>
+  <div class="soundgrid" id="soundgrid"></div>
+</section>
+
+<section class="view" id="music">
+  <h2>piano</h2><p class="sub">Tap the keys or press A S D F G H J K.</p>
+  <div class="stage"><div class="keys" id="keys"></div>
+    <div class="row" style="border:0;width:100%;max-width:320px"><span>wave</span>
+    <select id="wave"><option>sine</option><option>triangle</option><option>square</option><option>sawtooth</option></select></div></div>
+</section>
+
+<section class="view" id="ai">
+  <h2>rel ai</h2><p class="sub">Ask questions, get help with homework, brainstorm or write. It can make mistakes, so double-check important answers. (v7)</p>
+  <div class="chat"><div id="log"></div>
+    <div class="chips" id="chips"></div>
+    <div class="compose"><input id="aiq" type="text" placeholder="ask anything…" autocomplete="off"><button class="btn" id="aisend">send</button><button class="btn ghost" id="ainew">new</button></div></div>
+</section>
+
+<section class="view" id="chat">
+  <h2>global chat <span id="conline"></span></h2>
+  <p class="sub">Everyone on this Rel Zone server talks here, live. Be kind. <span id="cstatus"></span></p>
+  <div class="cnickrow">chatting as <input id="cnick" type="text" maxlength="20" autocomplete="off" placeholder="your name"></div>
+  <div class="chat"><div id="clog"></div>
+    <div class="compose"><input id="cin" type="text" maxlength="300" placeholder="say something…" autocomplete="off"><button class="btn" id="csend">send</button></div></div>
+</section>
+
+<section class="view" id="call">
+  <h2>calls <span id="callstat" class="sub" style="font-size:14px"></span></h2>
+  <p class="sub">Voice and video calls with people on this Rel Zone server. Needs a microphone, and the site opened at <b>localhost</b> or over <b>https</b>.</p>
+  <span id="callmsg"></span>
+  <div id="calllobby">
+    <div class="cpanel">
+      <div class="row"><div>Available for calls<small>Others can see your name and ring you. Off by default.</small></div><input type="checkbox" class="sw" id="callavail"></div>
+      <div class="cnickrow2">calling as <input id="callnick" type="text" maxlength="20" autocomplete="off" placeholder="your name"></div>
+      <h3>people</h3><div id="people"></div>
+    </div>
+    <div class="cpanel">
+      <h3>rooms</h3>
+      <div class="roomjoin"><input id="roomin" type="text" maxlength="24" value="lobby" placeholder="room name" autocomplete="off"><button class="btn" id="roomgo">join</button></div>
+      <div id="roomlist"></div>
+    </div>
+  </div>
+  <div id="callroom" hidden>
+    <div class="callhead"><b id="callroomname"></b><span id="callcount" class="sub" style="margin:0"></span></div>
+    <div id="callnote"></div>
+    <div class="ctiles" id="ctiles"></div>
+    <div class="ccontrols"><button class="btn ghost" id="cmic">🎤 mute</button><button class="btn ghost" id="ccam">📷 camera on</button><button class="btn danger" id="cleave">leave</button></div>
+  </div>
+</section>
+
+<section class="view" id="vm">
+  <h2>virtual machine</h2>
+  <p class="sub">Run old operating systems like Windows 95, DOS or small Linux right in your browser. It runs on your own computer, only uses your CPU while you're on this tab, and Rel Zone doesn't include any operating system: bring your own disk image.</p>
+  <div id="vmsetup">
+    <div class="cpanel">
+      <div class="row"><div>Machine<small>presets pick memory and graphics for you</small></div>
+        <select id="vmpreset"><option value="win95">Windows 95</option><option value="win98">Windows 98</option><option value="dos">DOS</option><option value="linux">Linux</option><option value="custom">Custom</option></select></div>
+      <div class="vmnote" id="vmnote"></div>
+      <div class="row"><div>Hard disk<small>the main drive, where Windows lives</small></div><div class="vmpick"><select id="vmhd"></select><label class="btn ghost vmfile">browse…<input type="file" id="vmhdfile" hidden></label></div></div>
+      <div class="row"><div>CD-ROM<small>.iso files</small></div><div class="vmpick"><select id="vmcd"></select><label class="btn ghost vmfile">browse…<input type="file" id="vmcdfile" hidden accept=".iso,.img,.bin"></label></div></div>
+      <div class="row"><div>Floppy<small>boot or setup disks</small></div><div class="vmpick"><select id="vmfd"></select><label class="btn ghost vmfile">browse…<input type="file" id="vmfdfile" hidden></label></div></div>
+      <div id="vmcheck" class="vmnote"></div>
+      <div class="row"><div>Memory</div><select id="vmmem"><option value="32">32 MB</option><option value="64">64 MB</option><option value="128">128 MB</option><option value="256">256 MB</option><option value="512">512 MB</option></select></div>
+      <div class="row"><div>Video memory</div><select id="vmvga"><option value="2">2 MB</option><option value="8">8 MB</option><option value="16">16 MB</option><option value="32">32 MB</option></select></div>
+      <div class="row"><div>Boot from</div><select id="vmboot"><option value="auto">automatic</option><option value="hd">hard disk first</option><option value="cd">CD-ROM first</option><option value="fd">floppy first</option></select></div>
+      <label class="row" style="border:0;padding:12px 0 0;cursor:pointer"><div>Start automatically<small>the first time you open this tab, if a Windows disk is found in vm_images</small></div><input type="checkbox" class="sw" id="vmauto" checked></label>
+      <div style="padding-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap"><button class="btn" id="vmstart">start</button><span id="vmstartnote" style="color:var(--muted);font-size:13px"></span></div>
+    </div>
+    <p class="sub" style="font-size:13px">Old systems start slowly in a browser (Windows 95 can take a few minutes), so use “save state” once it's up and “load state” next time to skip the wait.</p>
+  </div>
+  <div id="vmrun" hidden>
+    <div class="ccontrols" style="margin:0 0 10px">
+      <button class="btn ghost" id="vmpause">⏸ pause</button><button class="btn ghost" id="vmreset">↻ reset</button><button class="btn ghost" id="vmcad">Ctrl+Alt+Del</button>
+      <button class="btn ghost" id="vmfull">⛶ fullscreen</button><button class="btn ghost" id="vmsave">💾 save state</button>
+      <label class="btn ghost vmfile">📂 load state<input type="file" id="vmloadfile" hidden></label><button class="btn danger" id="vmexit">shut down</button>
+    </div>
+    <div id="vmwrap"><div id="vmscreen" tabindex="0"><div style="white-space:pre;font:14px monospace;line-height:14px"></div><canvas style="display:none"></canvas></div></div>
+    <p class="sub" id="vmstatus" style="margin:8px 0 0;font-size:13px"></p>
+  </div>
+</section>
+
+<section class="view" id="web">
+  <div class="wbar"><button class="btn ghost" id="wback" title="back">←</button><button class="btn ghost" id="wreload" title="reload">⟳</button>
+    <input id="wurl" type="text" placeholder="search or enter an address…" autocomplete="off"><button class="btn" id="wgo">go</button></div>
+  <div class="status" id="wstatus">Pages and games load inside Rel Zone through the proxy. Search from home or type an address.</div>
+  <iframe id="sjframe" title="web" hidden allow="fullscreen; autoplay; gamepad; clipboard-write"></iframe>
+  <iframe id="wframe" sandbox="allow-scripts allow-forms" title="web (basic)" hidden></iframe>
+</section>
+
+<section class="view" id="settings">
+  <h2>settings</h2><p class="sub">Saved in this browser only.</p>
+  <div class="row"><div>accent color<small>the main color used everywhere</small></div><input type="color" id="accent" value="#5ee0ff"></div>
+  <div class="row"><div>theme<small>follow your device or force one</small></div><select id="theme"><option value="auto">auto</option><option value="dark">dark</option><option value="light">light</option></select></div>
+  <div class="row"><div>fog background<small>animated fog behind everything</small></div><input type="checkbox" class="sw" id="fogOn" checked></div>
+  <div class="row"><div>cursor glow<small>soft light that follows the mouse</small></div><input type="checkbox" class="sw" id="glowOn" checked></div>
+  <div class="row"><div>cursive font<small>fancy font for titles</small></div><input type="checkbox" class="sw" id="cursive"></div>
+  <div class="row"><div>performance mode<small>turns off fog and glow if it lags</small></div><input type="checkbox" class="sw" id="perf"></div>
+  <div class="row"><div>search engine<small>used by the home search box</small></div><select id="engine"><option value="https://duckduckgo.com/?q=">DuckDuckGo</option><option value="https://www.google.com/search?q=">Google</option><option value="https://www.bing.com/search?q=">Bing</option></select></div>
+  <div class="row"><div>reset<small>put every setting back to default</small></div><button class="btn ghost" id="reset">reset</button></div>
+</section>
+</main>
+<div class="incoming" id="incoming" hidden><div><b id="incname"></b><small id="inctag"></small> is calling you…</div><div class="incbtns"><button class="btn" id="incyes">accept</button><button class="btn danger" id="incno">decline</button></div></div>
+</div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var DEF={accent:"#5ee0ff",theme:"auto",fog:true,glow:true,cursive:false,perf:false,engine:"https://duckduckgo.com/?q="};
+var S=Object.assign({},DEF);
+try{var raw=localStorage.getItem("oxy-settings");if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function save(){try{localStorage.setItem("oxy-settings",JSON.stringify(S))}catch(e){}}
+
+function apply(){
+  var r=document.documentElement;
+  r.style.setProperty("--accent",S.accent);
+  if(S.theme==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",S.theme);
+  document.body.classList.toggle("cursive",S.cursive);
+  document.body.classList.toggle("perf",S.perf);
+  $("#fog").style.display=(S.fog&&!S.perf)?"block":"none";
+  $("#glow").style.display=(S.glow&&!S.perf)?"block":"none";
+  $("#accent").value=S.accent;$("#theme").value=S.theme;$("#fogOn").checked=S.fog;
+  $("#glowOn").checked=S.glow;$("#cursive").checked=S.cursive;$("#perf").checked=S.perf;$("#engine").value=S.engine;
+}
+$("#accent").oninput=function(e){S.accent=e.target.value;save();apply()};
+$("#theme").onchange=function(e){S.theme=e.target.value;save();apply()};
+$("#engine").onchange=function(e){S.engine=e.target.value;save()};
+[["fogOn","fog"],["glowOn","glow"],["cursive","cursive"],["perf","perf"]].forEach(function(p){
+  $("#"+p[0]).onchange=function(e){S[p[1]]=e.target.checked;save();apply()}});
+$("#reset").onclick=function(){S=Object.assign({},DEF);save();apply()};
+
+var h=new Date().getHours();
+$("#greet").textContent=h<5?"up late?":h<12?"good morning":h<18?"good afternoon":"good evening";
+
+/* navigation */
+function show(v){
+  $$(".view").forEach(function(x){x.classList.toggle("on",x.id===v)});
+  $$("nav button").forEach(function(b){b.classList.toggle("on",b.dataset.v===v)});
+  if(v!=="games")stopGame();
+  if(v==="chat")chatOnShow();
+  if(v==="call")callOnShow();
+  if(v==="vm")vmEnter();else vmLeave();
+}
+$$("nav button").forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
+var tiles=[["🎮","games","Snake, memory and tic-tac-toe","games"],["🔊","soundboard","31 meme sound effects","sounds"],["🎹","piano","Play notes with your keyboard","music"],["✨","ai","Ask Rel AI for help with anything","ai"],["💬","chat","Talk to everyone on the server","chat"],["📞","calls","Voice and video calls with friends","call"],["🖥️","virtual machine","Run Windows 95, DOS and more","vm"],["⚙","settings","Colors, fog, cursor and more","settings"]];
+$("#tiles").innerHTML=tiles.map(function(t){return '<button class="card" data-v="'+t[3]+'"><div class="e">'+t[0]+'</div><b>'+t[1]+'</b><small>'+t[2]+'</small></button>'}).join("");
+$$("#tiles .card").forEach(function(c){c.onclick=function(){show(c.dataset.v)}});
+function search(){var q=$("#q").value.trim();if(q)openWeb(q)}
+$("#go").onclick=search;$("#q").onkeydown=function(e){if(e.key==="Enter")search()};
+
+/* meme soundboard */
+var soundFiles=[
+"BOOMBAMBOP.mp3","BRUH.mp3","DING.mp3","FBI OPEN UP.mp3","HA!GOTEE!HA!.mp3","Hello There.mp3","Hi How Are Ya.mp3","HUH.mp3","INCEPTION.mp3","MEANWHILE.mp3","Metal Boom.mp3","MINECRAFT OOF.mp3","MY LEG.mp3","NO GOD PLEASE NO.mp3","NOPE.mp3","OH NO NO NO.mp3","OH!!!!!!!.mp3","RIMSHOT.mp3","Sadness-1.mp3","Sadness-2.mp3","Sadness-3.mp3","SHREK-SWAMP.mp3","TACTICAL NUKE.mp3","TBC.mp3","The Screaming Sheep.mp3","Titanic-Paroday.mp3","Wait a minute....mp3","WINDOWS-ERROR.mp3","WINDOWS-STARTUP.mp3","WOW.mp3","YEET.mp3"
+];
+var soundNames={"BOOMBAMBOP.mp3":"BOOM BAM BOP","BRUH.mp3":"BRUH","DING.mp3":"DING","FBI OPEN UP.mp3":"FBI OPEN UP","HA!GOTEE!HA!.mp3":"HA! GOT EEE! HA!","Hello There.mp3":"Hello There","Hi How Are Ya.mp3":"Hi How Are Ya","HUH.mp3":"HUH?!","INCEPTION.mp3":"Inception","MEANWHILE.mp3":"Meanwhile","Metal Boom.mp3":"Metal Boom","MINECRAFT OOF.mp3":"Minecraft Oof","MY LEG.mp3":"MY LEG!","NO GOD PLEASE NO.mp3":"NO GOD PLEASE NO","NOPE.mp3":"NOPE","OH NO NO NO.mp3":"OH NO NO NO","OH!!!!!!!.mp3":"OH!!!!!!!","RIMSHOT.mp3":"Rimshot","Sadness-1.mp3":"Sadness 1","Sadness-2.mp3":"Sadness 2","Sadness-3.mp3":"Sadness 3","SHREK-SWAMP.mp3":"Shrek Swamp","TACTICAL NUKE.mp3":"TACTICAL NUKE","TBC.mp3":"To Be Continued","The Screaming Sheep.mp3":"Screaming Sheep","Titanic-Paroday.mp3":"Titanic Parody","Wait a minute....mp3":"Wait a minute…","WINDOWS-ERROR.mp3":"Windows Error","WINDOWS-STARTUP.mp3":"Windows Startup","WOW.mp3":"WOW","YEET.mp3":"YEET"};
+var soundIcons=["💥","💀","🔔","🚨","😂","🧔","👋","🗿","🎬","⏳","💣","⛏️","🦵","😭","🙅","😱","😮","🥁","😢","😢","😢","🧅","☢️","⏱️","🐑","🚢","👀","🪟","🪟","😮","🦅"];
+var currentSound=null;
+function soundLabel(f){return soundNames[f]||f.replace(/\.mp3$/i,'').replace(/[-_]/g,' ')}
+function stopSound(){if(currentSound){currentSound.pause();currentSound.currentTime=0;currentSound=null} $$(".sound.playing").forEach(function(b){b.classList.remove("playing")})}
+function renderSounds(){
+  var q=(($("#soundq")&&$("#soundq").value)||"").trim().toLowerCase();
+  var out=[];
+  soundFiles.forEach(function(f,i){var n=soundLabel(f);if(q&&n.toLowerCase().indexOf(q)<0)return;out.push('<button class="sound" data-sound="'+encodeURIComponent(f)+'"><span class="si">'+soundIcons[i]+'</span><span><b>'+escapeHtml(n)+'</b><small>click to play</small></span></button>')});
+  $("#soundgrid").innerHTML=out.join("")||'<p class="status">No sounds found.</p>';
+  $$("#soundgrid .sound").forEach(function(b){b.onclick=function(){
+    stopSound();
+    var f=decodeURIComponent(b.dataset.sound);currentSound=new Audio("/memes/"+encodeURIComponent(f).replace(/%2F/g,"/"));b.classList.add("playing");
+    currentSound.play().catch(function(){});currentSound.onended=function(){b.classList.remove("playing");currentSound=null};
+  }});
+}
+function escapeHtml(x){return String(x).replace(/[&<>"']/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]})}
+$("#soundq").oninput=renderSounds;$("#stopSound").onclick=stopSound;renderSounds();
+
+/* fog + cursor */
+var fc=$("#fog"),fx=fc.getContext("2d"),blobs=[],W,H;
+function size(){W=fc.width=innerWidth;H=fc.height=innerHeight}
+size();addEventListener("resize",size);
+for(var i=0;i<6;i++)blobs.push({x:Math.random(),y:Math.random(),r:.25+Math.random()*.25,dx:(Math.random()-.5)*.00025,dy:(Math.random()-.5)*.00025});
+var vmBusy=false;   /* true while a virtual machine is on screen: the fog stops so the emulator gets the CPU */
+function fog(){
+  if(S.fog&&!S.perf&&!vmBusy){
+    fx.clearRect(0,0,W,H);
+    blobs.forEach(function(b){
+      b.x+=b.dx;b.y+=b.dy;if(b.x<-.1||b.x>1.1)b.dx*=-1;if(b.y<-.1||b.y>1.1)b.dy*=-1;
+      var R=b.r*Math.max(W,H),g=fx.createRadialGradient(b.x*W,b.y*H,0,b.x*W,b.y*H,R);
+      g.addColorStop(0,S.accent+"26");g.addColorStop(1,S.accent+"00");
+      fx.fillStyle=g;fx.fillRect(0,0,W,H);
+    });
+  }
+  requestAnimationFrame(fog);
+}
+fog();
+addEventListener("pointermove",function(e){var g=$("#glow");g.style.left=e.clientX+"px";g.style.top=e.clientY+"px"});
+
+/* games: 100 real browser games loaded through Rel Zone's proxy */
+var stopFn=null;
+function stopGame(){if(stopFn){stopFn();stopFn=null}var st=$("#stage");st.hidden=true;st.innerHTML=""}
+var gameLinks=[
+["1v1.LOL","https://1v1.lol/","🔫"],["Drift Boss","https://driftboss.io/","🏎️"],["Geometry Dash","https://www.geometrydash.com/","🟩"],["Slope","https://slopegame.io/","⛷️"],["Shell Shockers","https://shellshock.io/","🥚"],["Krunker","https://krunker.io/","🎯"],["Agar.io","https://agar.io/","🟢"],["Slither.io","https://slither.io/","🐍"],["Diep.io","https://diep.io/","🛡️"],["Paper.io","https://paper-io.com/","📄"],
+["ZombsRoyale.io","https://zombsroyale.io/","🧟"],["Smash Karts","https://smashkarts.io/","🏎️"],["Kour.io","https://kour.io/","🎯"],["Ev.io","https://ev.io/","⚡"],["Venge.io","https://venge.io/","🔫"],["Bullet Force","https://www.bulletforce.com/","💥"],["Forward Assault","https://www.forwardassault.io/","🎯"],["Repuls.io","https://repuls.io/","🚀"],["Voxiom.io","https://voxiom.io/","🧱"],["Bonk.io","https://bonk.io/","⚽"],
+["Gats.io","https://gats.io/","🔫"],["Surviv.io","https://surviv.io/","🪖"],["Superhex.io","https://superhex.io/","⬡"],["Little Big Snake","https://littlebigsnake.com/","🐍"],["Wormate.io","https://wormate.io/","🍬"],["Hole.io","https://holeio.com/","⚫"],["Snowball.io","https://snowball.io/","❄️"],["MooMoo.io","https://moomoo.io/","🌳"],["Starve.io","https://starve.io/","🔥"],
+["Narwhale.io","https://narwhale.io/","🐋"],["Tetr.io","https://tetr.io/","🧩"],["Chess.com","https://www.chess.com/play/computer","♟️"],["Lichess","https://lichess.org/","♟️"],["Skribbl.io","https://skribbl.io/","✏️"],["Gartic Phone","https://garticphone.com/","📞"],["Little Alchemy 2","https://littlealchemy2.com/","🧪"],["Cookie Clicker","https://orteil.dashnet.org/cookieclicker/","🍪"],["2048","https://2048game.com/","🔢"],
+["Hextris","https://hextris.io/","⬡"],["Flappy Bird","https://flappybird.io/","🐦"],["Moto X3M","https://motox3m.co/","🏍️"],["Vex 6","https://vex6.io/","🏃"],["Vex 7","https://vex7.io/","🏃"],["Vex 8","https://vex8.io/","🏃"],["Run 3","https://run3.io/","🏃"],["Tunnel Rush","https://tunnelrush.io/","🌀"],["Fireboy & Watergirl","https://fireboywatergirl.io/","🔥"],["Action Games Hub","https://www.crazygames.com/c/action","🎮"],
+["Driving Games","https://www.crazygames.com/c/driving","🚗"],["Shooting Games","https://www.crazygames.com/c/shooting","🔫"],["Multiplayer Games","https://www.crazygames.com/c/multiplayer","👥"],["Racing Games","https://www.crazygames.com/c/racing","🏁"],["Sports Games","https://www.crazygames.com/c/sports","⚽"],["Puzzle Games","https://www.crazygames.com/c/puzzle","🧩"],["Arcade Games","https://www.crazygames.com/c/arcade","🕹️"],["IO Games","https://www.crazygames.com/c/io","🌐"],["Two Player Games","https://www.crazygames.com/c/2-player","👥"],["Strategy Games","https://www.crazygames.com/c/strategy","♟️"],
+["Action Games - Poki","https://poki.com/en/action","⚔️"],["Racing Games - Poki","https://poki.com/en/racing","🏎️"],["Sports Games - Poki","https://poki.com/en/sports","🏀"],["2 Player Games - Poki","https://poki.com/en/two-player","👥"],["Puzzle Games - Poki","https://poki.com/en/puzzle","🧩"],["Arcade Games - Poki","https://poki.com/en/arcade","🕹️"],["Adventure Games - Poki","https://poki.com/en/adventure","🗺️"],["Shooting Games - Poki","https://poki.com/en/shooting","🎯"],[".io Games - Poki","https://poki.com/en/io","🌐"],["New Games - Poki","https://poki.com/en/new","✨"],
+["Action Games - Coolmath","https://www.coolmathgames.com/1-action-games","⚡"],["Logic Games - Coolmath","https://www.coolmathgames.com/1-logic-games","🧠"],["Skill Games - Coolmath","https://www.coolmathgames.com/1-skill-games","🎯"],["Strategy Games - Coolmath","https://www.coolmathgames.com/1-strategy-games","♟️"],["Sports Games - Coolmath","https://www.coolmathgames.com/1-sports-games","🏀"],["Fireboy & Watergirl 2","https://www.coolmathgames.com/0-fireboy-and-water-girl-2","🔥"],["Fireboy & Watergirl 3","https://www.coolmathgames.com/0-fireboy-and-water-girl-3","🔥"],["Run 2","https://www.coolmathgames.com/0-run-2","🏃"],["Run 3 - Coolmath","https://www.coolmathgames.com/0-run-3","🏃"],["World's Hardest Game","https://www.coolmathgames.com/0-worlds-hardest-game","💀"],
+["Papa's Pizzeria","https://www.coolmathgames.com/0-papas-pizzeria","🍕"],["Papa's Freezeria","https://www.coolmathgames.com/0-papas-freezeria","🍦"],["Bloxorz","https://www.coolmathgames.com/0-bloxorz","🧊"],["Action Turnip","https://www.coolmathgames.com/0-action-turnip","🥕"],["Bob the Robber","https://www.coolmathgames.com/0-bob-the-robber","🥷"],["Fireboy & Watergirl 4","https://www.coolmathgames.com/0-fireboy-and-water-girl-4","🔥"],["Adventures of Pip","https://www.coolmathgames.com/0-adventures-of-pip","🗺️"],["Soccer Random","https://www.coolmathgames.com/0-soccer-random","⚽"],["Basket Random","https://www.coolmathgames.com/0-basket-random","🏀"],["Boxing Random","https://www.coolmathgames.com/0-boxing-random","🥊"],
+["Drift Hunters","https://www.crazygames.com/game/drift-hunters","🏎️"],["Super Star Car","https://www.crazygames.com/game/super-star-car","🏁"],["Highway Traffic","https://www.crazygames.com/game/highway-traffic","🚘"],["Moto X3M Pool Party","https://www.crazygames.com/game/moto-x3m-pool-party","🏍️"],["Stickman Hook","https://www.crazygames.com/game/stickman-hook","🪝"],["Raft Wars","https://www.crazygames.com/game/raft-wars","🛶"],["Action King: Draw Fight","https://www.crazygames.com/game/action-king-draw-fight","🥊"],["Getaway Shootout","https://www.crazygames.com/game/getaway-shootout","🏃"],["House of Hazards","https://www.crazygames.com/game/house-of-hazards","🏠"],["Masked Forces","https://www.crazygames.com/game/masked-forces","🎯"],["Bloxd.io","https://bloxd.io/","🧱"],["Miniblox","https://miniblox.io/","🧊"],["BuildNow GG","https://buildnow.gg/","🔫"],["Zombs.io","https://zombs.io/","🧟"],["Hordes.io","https://hordes.io/","⚔️"],["Survivor.io","https://survivor.io/","🧟"],["Mope.io","https://mope.io/","🐾"],["Chess Arena","https://www.chess.com/play/online","♟️"]
+];
+function renderGames(){
+  $("#gamelist").innerHTML=gameLinks.map(function(g,i){return '<button class="card" data-i="'+i+'"><div class="e">'+g[2]+'</div><b>'+g[0]+'</b><small>plays inside Rel Zone</small></button>'}).join("");
+  $$("#gamelist .card").forEach(function(c){c.onclick=function(){var g=gameLinks[+c.dataset.i];openGame(g[1],g[0])}});
+}
+function openGame(url,name){openWeb(url)}
+renderGames();
+
+/* ai (served by the Python backend) */
+var hist=[],busy=false,ctl=null;
+var log=$("#log");
+function addMsg(role,text){var m=document.createElement("div");m.className="msg "+role;m.textContent=text;log.appendChild(m);log.scrollTop=log.scrollHeight;return m}
+function aiReset(){hist=[];log.innerHTML="";addMsg("bot","Hi! I'm Rel AI. What are we working on?")}
+["Solve a problem","Check my work","Quiz me","Fix my writing"].forEach(function(t){
+  var b=document.createElement("button");b.textContent=t;b.onclick=function(){$("#aiq").value=t+": ";$("#aiq").focus()};$("#chips").appendChild(b)});
+async function ask(){
+  var q=$("#aiq").value.trim();if(!q||busy)return;
+  addMsg("me",q);$("#aiq").value="";
+  hist.push({role:"user",content:q});
+  var out=addMsg("bot","…"),acc="";busy=true;$("#aisend").disabled=true;
+  try{
+    ctl=new AbortController();
+    var r=await fetch("/api/chat",{method:"POST",signal:ctl.signal,headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:hist.slice(-12)})});
+    if(!r.ok){var er=new Error("http");er.status=r.status;try{er.detail=(await r.json()).detail}catch(_){}throw er}
+    var rd=r.body.getReader(),dec=new TextDecoder(),buf="";
+    for(;;){
+      var c=await rd.read();if(c.done)break;
+      buf+=dec.decode(c.value,{stream:true});
+      var lines=buf.split("\n");buf=lines.pop();
+      lines.forEach(function(l){
+        l=l.trim();if(l.indexOf("data:")!==0)return;
+        var d=l.slice(5).trim();if(!d||d==="[DONE]")return;
+        try{var t=JSON.parse(d).choices[0].delta.content;if(t){acc+=t;out.textContent=acc;log.scrollTop=log.scrollHeight}}catch(_){}
+      });
+    }
+    if(!acc)throw new Error("empty");
+    hist.push({role:"assistant",content:acc});
+  }catch(e){
+    if(e&&e.name==="AbortError")return;
+    out.textContent=!e||!e.status?"Can't reach the Rel Zone server ("+((e&&e.message)||"no response")+"). Open the site through python app.py at http://127.0.0.1:5000, not by double-clicking the HTML file.":
+      e.status===429?"Rate limited. Wait a moment, then send again.":
+      e.status===500?"Rel AI isn't set up on the server yet (missing GROQ_API_KEY in .env).":
+      e.status===401||e.status===403?"Groq rejected the API key. It may be wrong or revoked. Make a new one and put it in .env, then restart the server.":
+      "AI error ("+e.status+")"+(e.detail?": "+e.detail:"")+".";
+    try{var hc=await (await fetch("/api/health")).json();
+      out.textContent+="\n\nDiagnosis: "+(hc.problem||hc.result||"server check passed")}catch(_){}
+    hist.pop();
+  }
+  busy=false;$("#aisend").disabled=false;
+}
+$("#aisend").onclick=ask;$("#aiq").onkeydown=function(e){if(e.key==="Enter")ask()};
+$("#ainew").onclick=function(){if(ctl)ctl.abort();busy=false;$("#aisend").disabled=false;aiReset()};
+aiReset();
+
+/* global chat (WebSocket to /ws/chat on this server) */
+var chatWs=null,chatTry=0,chatLog=$("#clog"),chatDot=$("#cdot");
+function lsGet(k){try{return localStorage.getItem(k)}catch(_){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(_){}}
+$("#cnick").value=lsGet("rz_nick")||"guest"+(1000+Math.floor(Math.random()*9000));
+function chatOpen(){return $("#chat").classList.contains("on")}
+function nearBottom(){return chatLog.scrollTop+chatLog.clientHeight>=chatLog.scrollHeight-80}
+function trimChat(){while(chatLog.children.length>200)chatLog.removeChild(chatLog.firstChild)}
+function addSys(text){var d=document.createElement("div");d.className="csys";d.textContent=text;chatLog.appendChild(d);trimChat();chatLog.scrollTop=chatLog.scrollHeight}
+function addChat(m){
+  var stick=m.me||nearBottom();
+  var row=document.createElement("div");row.className="cmsg"+(m.me?" me":"");
+  var h=document.createElement("div");h.className="ch";
+  var n=document.createElement("b");n.textContent=m.nick;
+  var t=document.createElement("small");t.textContent="#"+m.tag+" · "+new Date(m.ts*1000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+  h.appendChild(n);h.appendChild(t);
+  var b=document.createElement("div");b.className="cb";b.textContent=m.text;   /* text only, never HTML */
+  row.appendChild(h);row.appendChild(b);chatLog.appendChild(row);trimChat();
+  if(stick)chatLog.scrollTop=chatLog.scrollHeight;
+}
+function onChat(d){
+  if(d.t==="history"){chatLog.innerHTML="";d.msgs.forEach(addChat);if(!d.msgs.length)addSys("No messages yet. Say hi!");chatLog.scrollTop=chatLog.scrollHeight}
+  else if(d.t==="msg"){var empty=chatLog.firstChild&&chatLog.firstChild.className==="csys"&&/^No messages/.test(chatLog.firstChild.textContent);if(empty)chatLog.innerHTML="";addChat(d);if(!d.me&&!chatOpen())chatDot.hidden=false}
+  else if(d.t==="online"){$("#conline").textContent="· "+d.n+" online"}
+  else if(d.t==="you"){$("#cnick").value=d.nick;$("#callnick").value=d.nick;lsSet("rz_nick",d.nick)}
+  else if(d.t==="error"){addSys(d.text)}
+}
+function chatConnect(){
+  if(chatWs&&chatWs.readyState<2)return;
+  $("#cstatus").textContent="connecting…";
+  var ws=new WebSocket((location.protocol==="https:"?"wss":"ws")+"://"+location.host+"/ws/chat");chatWs=ws;
+  ws.onopen=function(){chatTry=0;$("#cstatus").textContent="";ws.send(JSON.stringify({t:"hello",nick:$("#cnick").value}))};
+  ws.onmessage=function(e){var d;try{d=JSON.parse(e.data)}catch(_){return}onChat(d)};
+  ws.onclose=function(){if(chatWs!==ws)return;$("#conline").textContent="";$("#cstatus").textContent="disconnected, retrying…";setTimeout(chatConnect,Math.min(15000,1000*Math.pow(2,chatTry++)))};
+  ws.onerror=function(){try{ws.close()}catch(_){}};
+}
+function chatOnShow(){chatDot.hidden=true;chatConnect()}
+function chatSend(){
+  var v=$("#cin").value.trim();if(!v)return;
+  if(!chatWs||chatWs.readyState!==1){addSys("Not connected yet, one moment…");return}
+  chatWs.send(JSON.stringify({t:"msg",text:v}));$("#cin").value="";
+}
+$("#csend").onclick=chatSend;$("#cin").onkeydown=function(e){if(e.key==="Enter")chatSend()};
+$("#cnick").onchange=function(){syncNick(this.value)};
+
+/* calls: WebRTC between browsers, set up over /ws/call on this server */
+var cws=null,cTry=0,cWant=false,cMe=null,cIce=null,cMic=null,cCamTrack=null,cLocalStream=null;
+var cRoom=null,cOutgoing=null,cPeers={},cInc=null,cMsgTimer=null,cCtx=null,cRingTimer=null,cWatch=[],cWatchTimer=null,cAvail=false;
+var cLastLists={people:[],rooms:[]};
+function callOk(){return window.isSecureContext&&navigator.mediaDevices&&window.RTCPeerConnection}
+function csend(o){if(cws&&cws.readyState===1)cws.send(JSON.stringify(o))}
+function setCallMsg(t){var m=$("#callmsg");m.textContent=t||"";clearTimeout(cMsgTimer);if(t)cMsgTimer=setTimeout(function(){m.textContent=""},12000)}
+function unlockAudio(){try{if(!cCtx)cCtx=new (window.AudioContext||window.webkitAudioContext)();if(cCtx.state==="suspended")cCtx.resume()}catch(_){}}
+function initials(n){return (n||"?").trim().slice(0,2).toUpperCase()}
+function syncNick(v){$("#cnick").value=v;$("#callnick").value=v;lsSet("rz_nick",v);
+  if(cws&&cws.readyState===1)cws.send(JSON.stringify({t:"hello",nick:v}));
+  if(typeof chatWs!=="undefined"&&chatWs&&chatWs.readyState===1)chatWs.send(JSON.stringify({t:"hello",nick:v}))}
+$("#callnick").value=$("#cnick").value;
+$("#callnick").onchange=function(){syncNick(this.value)};
+
+/* ---- connection to the signalling server */
+function cConnect(){
+  cWant=true;
+  if(cws&&cws.readyState<2)return;
+  $("#callstat").textContent="· connecting…";
+  var ws=new WebSocket((location.protocol==="https:"?"wss":"ws")+"://"+location.host+"/ws/call");cws=ws;
+  ws.onopen=function(){cTry=0;$("#callstat").textContent="";ws.send(JSON.stringify({t:"hello",nick:$("#callnick").value}));if(cAvail)ws.send(JSON.stringify({t:"avail",on:true}))};
+  ws.onmessage=function(e){var d;try{d=JSON.parse(e.data)}catch(_){return}onCall(d)};
+  ws.onclose=function(){if(cws!==ws)return;if(cRoom||cOutgoing)endCall("Lost the connection to the server, so the call ended.",true);hideIncoming();
+    $("#callstat").textContent="· disconnected, retrying…";cLastLists={people:[],rooms:[]};renderLists();if(cWant)setTimeout(cConnect,Math.min(15000,1000*Math.pow(2,cTry++)))};
+  ws.onerror=function(){try{ws.close()}catch(_){}};
+}
+function callOnShow(){cConnect();if(!callOk())setCallMsg("Calls need http://localhost or https, plus a microphone. This page can't use one right now.")}
+cAvail=lsGet("rz_avail")==="1";$("#callavail").checked=cAvail;
+if(cAvail)setTimeout(cConnect,300);
+$("#callavail").onchange=function(){cAvail=this.checked;lsSet("rz_avail",cAvail?"1":"0");unlockAudio();cConnect();csend({t:"avail",on:cAvail});renderLists()};
+
+/* ---- lists */
+function prow(){var r=document.createElement("div");r.className="prow";return r}
+function renderLists(){
+  var pe=$("#people"),ro=$("#roomlist");pe.innerHTML="";ro.innerHTML="";
+  var others=(cLastLists.people||[]).filter(function(p){return !cMe||p.id!==cMe.id});
+  function empty(host,t){var d=document.createElement("div");d.className="cempty";d.textContent=t;host.appendChild(d)}
+  if(!cAvail)empty(pe,"Turn on “Available for calls” to see who else is around and to be reachable.");
+  else if(!others.length)empty(pe,"Nobody else is available right now. Tell a friend to switch it on, or join a room.");
+  others.forEach(function(p){var r=prow(),n=document.createElement("span");n.className="pn";n.textContent=p.nick+" ";var s=document.createElement("small");s.textContent="#"+p.tag+(p.busy?" · in a call":"");n.appendChild(s);
+    var b=document.createElement("button");b.className="btn";b.textContent="📞 call";b.disabled=!!p.busy||!!cRoom||!!cOutgoing;b.onclick=function(){callPerson(p.id)};r.appendChild(n);r.appendChild(b);pe.appendChild(r)});
+  var rooms=cLastLists.rooms||[];
+  if(!rooms.length)empty(ro,"No active rooms yet. Start one!");
+  rooms.forEach(function(x){var r=prow(),n=document.createElement("span");n.className="pn";n.textContent=x.name+" ";var s=document.createElement("small");s.textContent="· "+x.count+" in the room";n.appendChild(s);
+    var b=document.createElement("button");b.className="btn ghost";b.textContent="join";b.disabled=!!cRoom||!!cOutgoing;b.onclick=function(){joinRoom(x.name)};r.appendChild(n);r.appendChild(b);ro.appendChild(r)});
+}
+
+/* ---- local media */
+async function ensureMic(){
+  if(cMic&&cMic.readyState==="live")return true;
+  if(!callOk()){setCallMsg("Calls need http://localhost or https, plus a microphone. This page can't use one right now.");return false}
+  try{var s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});cMic=s.getAudioTracks()[0];return true}
+  catch(e){cMic=null;setCallMsg(e&&e.name==="NotAllowedError"?"Microphone blocked. Click the lock icon in the address bar to allow it. You'll join as a listener.":e&&e.name==="NotFoundError"?"No microphone found. You'll join as a listener.":"Couldn't start the microphone. You'll join as a listener.");return "listen"}
+}
+async function getIce(){if(cIce)return cIce;try{cIce=await (await fetch("/api/ice")).json()}catch(_){cIce=[{urls:"stun:stun.l.google.com:19302"}]}return cIce}
+function sendState(){csend({t:"state",mic:!!(cMic&&cMic.enabled),cam:!!cCamTrack});updateLocalTile()}
+
+/* ---- tiles */
+function mkTile(id,name,local){
+  var t=document.createElement("div");t.className="ctile";t.dataset.id=id;
+  var v=document.createElement("video");v.autoplay=true;v.playsInline=true;if(local)v.muted=true;
+  var a=document.createElement("div");a.className="avatar";a.textContent=initials(name);
+  var l=document.createElement("div");l.className="clabel";var mic=document.createElement("span");mic.className="micoff";mic.textContent="🔇";mic.hidden=true;var nm=document.createElement("span");nm.className="nm";nm.textContent=local?name+" (you)":name;l.appendChild(mic);l.appendChild(nm);
+  var s=document.createElement("div");s.className="cstate";
+  t.appendChild(v);t.appendChild(a);t.appendChild(l);t.appendChild(s);$("#ctiles").appendChild(t);return t;
+}
+function peerTile(id){var p=cPeers[id];if(!p)return null;if(!p.tile)p.tile=mkTile(id,(p.meta&&p.meta.nick)||"someone",false);return p.tile}
+function paintTile(t,meta,stateText){
+  if(!t||!meta)return;
+  t.classList.toggle("cam",!!meta.cam);t.querySelector(".micoff").hidden=meta.mic!==false;
+  t.querySelector(".avatar").textContent=initials(meta.nick);
+  t.querySelector(".nm").textContent=meta.nick+(t.dataset.id==="me"?" (you)":"");
+  if(stateText!==undefined)t.querySelector(".cstate").textContent=stateText;
+}
+function updateLocalTile(){var t=$('#ctiles [data-id="me"]');if(!t||!cMe)return;paintTile(t,{nick:cMe.nick,mic:!!(cMic&&cMic.enabled),cam:!!cCamTrack})}
+function updateCount(){var n=Object.keys(cPeers).length+1;$("#callcount").textContent="· "+n+" in the room"}
+
+/* ---- speaking highlight */
+function watchLevel(stream,tile,isMuted){
+  if(!cCtx||!stream.getAudioTracks().length)return;
+  try{var an=cCtx.createAnalyser();an.fftSize=512;cCtx.createMediaStreamSource(stream).connect(an);cWatch.push({an:an,buf:new Uint8Array(an.fftSize),tile:tile,muted:isMuted});
+    if(!cWatchTimer)cWatchTimer=setInterval(function(){cWatch.forEach(function(w){w.an.getByteTimeDomainData(w.buf);var s=0;for(var i=0;i<w.buf.length;i++){var x=(w.buf[i]-128)/128;s+=x*x}w.tile.classList.toggle("speaking",Math.sqrt(s/w.buf.length)>0.035&&!(w.muted&&w.muted()))})},150)}catch(_){}
+}
+function stopWatching(){cWatch=[];clearInterval(cWatchTimer);cWatchTimer=null}
+
+/* ---- peer connections (full mesh; the person who joins last makes the offers) */
+async function ensurePeer(id,offerer){
+  var p=cPeers[id]||(cPeers[id]={meta:null,pending:[]});
+  if(p.pc)return p;
+  var pc=new RTCPeerConnection({iceServers:await getIce()});p.pc=pc;p.stream=new MediaStream();
+  if(offerer){   /* the answerer attaches its tracks later, in armAnswerer(): transceivers made before a remote offer aren't matched to it */
+    var ta=pc.addTransceiver("audio",{direction:"sendrecv"}),tv=pc.addTransceiver("video",{direction:"sendrecv"});p.vs=tv.sender;p.as=ta.sender;
+    if(cMic)await ta.sender.replaceTrack(cMic);
+    if(cCamTrack)await tv.sender.replaceTrack(cCamTrack);
+  }
+  var tile=peerTile(id),vid=tile.querySelector("video");
+  pc.ontrack=function(e){p.stream.addTrack(e.track);if(vid.srcObject!==p.stream)vid.srcObject=p.stream;vid.play().catch(function(){});
+    if(e.track.kind==="audio")watchLevel(p.stream,tile,function(){return p.meta&&p.meta.mic===false})};
+  pc.onicecandidate=function(e){if(e.candidate)csend({t:"signal",to:id,data:{candidate:e.candidate}})};
+  pc.onconnectionstatechange=function(){var s=pc.connectionState;
+    tile.querySelector(".cstate").textContent=s==="connected"?"":s==="failed"?"connection failed":s==="disconnected"?"reconnecting…":"connecting…";
+    if(s==="failed"&&p.offerer&&!p.restarted){p.restarted=true;pc.createOffer({iceRestart:true}).then(function(o){return pc.setLocalDescription(o)}).then(function(){csend({t:"signal",to:id,data:{sdp:pc.localDescription}})}).catch(function(){})}};
+  p.offerer=offerer;paintTile(tile,p.meta,"connecting…");
+  if(offerer){await pc.setLocalDescription(await pc.createOffer());csend({t:"signal",to:id,data:{sdp:pc.localDescription}})}
+  return p;
+}
+/* Safety net: sometimes a camera that was already running when a peer connects delivers a couple of frames and then stalls
+   (the picture freezes for the other person). A few seconds after the camera is attached we check that frames are really being
+   encoded. If not: 1st try = detach and re-attach the track, 2nd/3rd try = get a fresh camera stream and swap it in (the same
+   thing that always works when you turn the camera on during a call). */
+var cLastRestart=0;
+async function restartCamera(){
+  if(!cCamTrack||Date.now()-cLastRestart<6000)return;cLastRestart=Date.now();
+  try{
+    var s=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},frameRate:{ideal:24}}});
+    var nt=s.getVideoTracks()[0],old=cCamTrack;cCamTrack=nt;
+    for(var id in cPeers){if(cPeers[id].vs)await cPeers[id].vs.replaceTrack(nt)}
+    var lv=$('#ctiles [data-id="me"] video');if(lv){lv.srcObject=new MediaStream([nt]);lv.play().catch(function(){})}
+    try{old.stop()}catch(_){}
+  }catch(e){console.warn("camera restart failed",e)}
+}
+function videoWatchdog(p){
+  if(!p||!p.pc||!p.vs)return;
+  clearInterval(p.wd);var last=-1,tries=0;
+  p.wd=setInterval(async function(){
+    if(!cCamTrack||!p.pc||p.pc.connectionState==="closed"||tries>=4){clearInterval(p.wd);return}
+    if(p.pc.connectionState!=="connected")return;
+    var enc=0;try{(await p.pc.getStats()).forEach(function(r){if(r.type==="outbound-rtp"&&r.kind==="video")enc=r.framesEncoded||0})}catch(_){return}
+    if(enc>last+2){last=enc;return}
+    tries++;last=enc;
+    if(tries===1){try{var t=cCamTrack;await p.vs.replaceTrack(null);await new Promise(function(r){setTimeout(r,200)});await p.vs.replaceTrack(t)}catch(_){}}
+    else await restartCamera();
+  },3000);
+}
+async function armAnswerer(p){
+  var ts=p.pc.getTransceivers();
+  for(var i=0;i<ts.length;i++){var t=ts[i],kind=t.receiver&&t.receiver.track&&t.receiver.track.kind;
+    if(kind==="audio"){p.as=t.sender;t.direction="sendrecv";if(cMic)await t.sender.replaceTrack(cMic)}
+    else if(kind==="video"){p.vs=t.sender;t.direction="sendrecv"}}   /* the camera is attached after the answer is applied, see onSignal */
+}
+async function flushPending(p){var q=p.pending.splice(0);for(var i=0;i<q.length;i++){try{await p.pc.addIceCandidate(q[i])}catch(_){}}}
+async function onSignal(from,data){
+  try{
+    if(data.sdp){
+      if(data.sdp.type==="offer"){var p=await ensurePeer(from,false);await p.pc.setRemoteDescription(data.sdp);await armAnswerer(p);await flushPending(p);await p.pc.setLocalDescription(await p.pc.createAnswer());csend({t:"signal",to:from,data:{sdp:p.pc.localDescription}});if(cCamTrack&&p.vs){await p.vs.replaceTrack(cCamTrack);videoWatchdog(p)}}
+      else{var q=cPeers[from];if(q&&q.pc){await q.pc.setRemoteDescription(data.sdp);await flushPending(q)}}
+    }else if(data.candidate){
+      var r=cPeers[from]||(cPeers[from]={meta:null,pending:[]});
+      if(r.pc&&r.pc.remoteDescription)r.pc.addIceCandidate(data.candidate).catch(function(){});else r.pending.push(data.candidate);
+    }
+  }catch(e){console.warn("signal error",e)}
+}
+function dropPeer(id){var p=cPeers[id];if(!p)return;clearInterval(p.wd);try{p.pc&&p.pc.close()}catch(_){}if(p.tile){cWatch=cWatch.filter(function(w){return w.tile!==p.tile});p.tile.remove()}delete cPeers[id];updateCount()}
+
+/* ---- joining, leaving */
+async function joinRoom(name){
+  if(cRoom||cOutgoing)return;unlockAudio();
+  var ok=await ensureMic();if(ok===false)return;
+  csend({t:"join",room:name});
+}
+async function callPerson(id){
+  if(cRoom||cOutgoing)return;unlockAudio();
+  var ok=await ensureMic();if(ok===false)return;
+  csend({t:"call",to:id});
+}
+function showRoomUI(name,note){
+  $("#calllobby").hidden=true;$("#callroom").hidden=false;$("#callroomname").textContent=name.charAt(0)==="~"?"private call":"room: "+name;
+  $("#callnote").textContent=note||"";$("#cmic").textContent=(cMic&&cMic.enabled)?"🎤 mute":"🎤 unmute";$("#cmic").disabled=!cMic;
+  $("#ccam").textContent=cCamTrack?"📷 camera off":"📷 camera on";$("#callnav").classList.add("ok");$("#calldot").hidden=false;$("#calldot").classList.add("ok");
+}
+function endCall(msg,noSend){
+  if(!noSend){if(cOutgoing)csend({t:"cancel",room:cOutgoing});if(cRoom||cOutgoing)csend({t:"leave"})}
+  Object.keys(cPeers).forEach(dropPeer);stopWatching();
+  if(cCamTrack){try{cCamTrack.stop()}catch(_){}cCamTrack=null}
+  if(cMic){try{cMic.stop()}catch(_){}cMic=null}
+  $("#ctiles").innerHTML="";cRoom=null;cOutgoing=null;stopRing();
+  $("#callroom").hidden=true;$("#calllobby").hidden=false;$("#calldot").hidden=true;$("#calldot").classList.remove("ok");
+  if(msg)setCallMsg(msg);renderLists();
+}
+$("#roomgo").onclick=function(){joinRoom($("#roomin").value)};
+$("#roomin").onkeydown=function(e){if(e.key==="Enter")joinRoom($("#roomin").value)};
+$("#cleave").onclick=function(){endCall("")};
+$("#cmic").onclick=function(){if(!cMic)return;cMic.enabled=!cMic.enabled;$("#cmic").textContent=cMic.enabled?"🎤 mute":"🎤 unmute";sendState()};
+$("#ccam").onclick=async function(){
+  if(!cRoom)return;
+  if(cCamTrack){try{cCamTrack.stop()}catch(_){}cCamTrack=null;for(var id in cPeers){if(cPeers[id].vs)cPeers[id].vs.replaceTrack(null).catch(function(){})}
+    var lv=$('#ctiles [data-id="me"] video');if(lv)lv.srcObject=null}
+  else{try{var s=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},frameRate:{ideal:24}}});cCamTrack=s.getVideoTracks()[0];
+      for(var k in cPeers){if(cPeers[k].vs){await cPeers[k].vs.replaceTrack(cCamTrack);videoWatchdog(cPeers[k])}}
+      var lv2=$('#ctiles [data-id="me"] video');if(lv2){lv2.srcObject=new MediaStream([cCamTrack]);lv2.play().catch(function(){})}}
+    catch(e){setCallMsg(e&&e.name==="NotAllowedError"?"Camera blocked. Allow it in the address bar.":"Couldn't start the camera.");return}}
+  $("#ccam").textContent=cCamTrack?"📷 camera off":"📷 camera on";sendState();
+};
+
+/* ---- incoming calls */
+function beep(f,t0,dur){try{var o=cCtx.createOscillator(),g=cCtx.createGain();o.frequency.value=f;o.connect(g);g.connect(cCtx.destination);g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(0.07,t0+0.03);g.gain.linearRampToValueAtTime(0,t0+dur);o.start(t0);o.stop(t0+dur+0.05)}catch(_){}}
+function startRing(){stopRing();if(!cCtx||cCtx.state!=="running")return;var go=function(){var t=cCtx.currentTime;beep(440,t,0.4);beep(480,t+0.45,0.4)};go();cRingTimer=setInterval(go,2200)}
+function stopRing(){clearInterval(cRingTimer);cRingTimer=null}
+function showIncoming(d){
+  cInc=d;$("#incname").textContent=d.from.nick;$("#inctag").textContent=" #"+d.from.tag;$("#incoming").hidden=false;$("#calldot").hidden=false;$("#calldot").classList.remove("ok");startRing();
+  document.title="📞 "+d.from.nick+" is calling";
+}
+function hideIncoming(){cInc=null;$("#incoming").hidden=true;stopRing();document.title=BASE_TITLE;if(!cRoom){$("#calldot").hidden=true}}
+var BASE_TITLE=document.title;
+$("#incyes").onclick=async function(){
+  if(!cInc||cRoom||cOutgoing)return;var room=cInc.room;unlockAudio();hideIncoming();
+  var ok=await ensureMic();if(ok===false)return;csend({t:"join",room:room});
+};
+$("#incno").onclick=function(){if(!cInc)return;csend({t:"respond",room:cInc.room,accept:false});hideIncoming()};
+
+/* ---- messages from the server */
+function onCall(d){
+  switch(d.t){
+    case "you":cMe=d;if($("#callnick").value!==d.nick){$("#callnick").value=d.nick;$("#cnick").value=d.nick;lsSet("rz_nick",d.nick)}break;
+    case "lists":cLastLists=d;renderLists();break;
+    case "ringing":cOutgoing=d.room;csend({t:"join",room:d.room});break;
+    case "incoming":if(cRoom||cOutgoing){csend({t:"respond",room:d.room,accept:false});break}showIncoming(d);break;
+    case "joined":
+      cRoom=d.room;cPeers={};$("#ctiles").innerHTML="";cMe=d.you;
+      var me=mkTile("me",d.you.nick,true);paintTile(me,{nick:d.you.nick,mic:!!(cMic&&cMic.enabled),cam:false});
+      if(cMic){var ls=new MediaStream([cMic]);watchLevel(ls,me,function(){return !(cMic&&cMic.enabled)})}
+      showRoomUI(d.room,cOutgoing&&!d.peers.length?"Ringing… waiting for them to pick up.":(cMic?"":"You're listening only (no microphone)."));
+      d.peers.forEach(function(p){cPeers[p.id]={meta:p,pending:[]};ensurePeer(p.id,true)});updateCount();sendState();break;
+    case "peer-join":
+      var q=cPeers[d.peer.id]||(cPeers[d.peer.id]={meta:null,pending:[]});q.meta=d.peer;var t=peerTile(d.peer.id);paintTile(t,d.peer);updateCount();$("#callnote").textContent=cMic?"":"You're listening only (no microphone).";cOutgoing=null;break;
+    case "peer-leave":
+      dropPeer(d.id);
+      if(cRoom&&cRoom.charAt(0)==="~"&&!Object.keys(cPeers).length)endCall("The call ended.");break;
+    case "peer-state":case "peer-info":
+      var pid=d.id||d.peer.id,pp=cPeers[pid];if(pp){pp.meta=Object.assign(pp.meta||{},d.peer||{mic:d.mic,cam:d.cam});paintTile(peerTile(pid),pp.meta)}break;
+    case "signal":onSignal(d.from,d.data);break;
+    case "declined":endCall((d.nick||"They")+" declined the call.");break;
+    case "missed":hideIncoming();endCall(cRoom||cOutgoing?"Nobody picked up.":"");break;
+    case "cancelled":hideIncoming();break;
+    case "busy":endCall((d.nick||"They")+" is in another call right now.");break;
+    case "error":setCallMsg(d.text);break;
+  }
+}
+
+/* virtual machine: the v86 PC emulator, runs inside this browser (nothing runs on the server) */
+var vmEmu=null,vmFiles={hd:null,cd:null,fd:null},vmServer=[],vmAutoPaused=false;
+var VMP={win95:{name:"Windows 95",file:"windows95.img",mem:128,vga:8,boot:"hd",hint:/(win(dows)?[ _.\-]?95|\bw95\b)/i},win98:{name:"Windows 98",file:"windows98.img",mem:256,vga:16,boot:"hd",hint:/(win(dows)?[ _.\-]?98|\bw98\b)/i},
+  dos:{name:"DOS",mem:32,vga:2,boot:"auto",hint:/dos/i},linux:{name:"Linux",mem:256,vga:8,boot:"auto",hint:/linux|alpine|tiny|debian|buildroot/i},custom:{name:"your machine",mem:128,vga:8,boot:"auto",hint:null}};
+function vmKind(f){var n=f.name.toLowerCase();if(/\.iso$/.test(n))return"cd";if(f.size<=2949120)return"fd";return"hd"}
+function vmMb(n){return Math.round(n/1048576)+" MB"}
+function vmFill(kind){
+  var sel=$("#vm"+kind),keep=sel.value;sel.innerHTML="";
+  function opt(v,t){var o=document.createElement("option");o.value=v;o.textContent=t;sel.appendChild(o)}
+  opt("none","(none)");
+  vmServer.filter(function(f){return vmKind(f)===kind}).forEach(function(f){opt("srv:"+f.name,f.name+" ("+vmMb(f.size)+")")});
+  if(vmFiles[kind])opt("loc","📁 "+vmFiles[kind].name+" ("+vmMb(vmFiles[kind].size)+")");
+  if(kind==="hd"){opt("blank:256","new empty disk (256 MB)");opt("blank:512","new empty disk (512 MB)")}
+  for(var i=0;i<sel.options.length;i++)if(sel.options[i].value===keep)sel.value=keep;
+}
+function vmApplyPreset(){
+  var p=VMP[$("#vmpreset").value];
+  $("#vmmem").value=String(p.mem);$("#vmvga").value=String(p.vga);$("#vmboot").value=p.boot;
+  var note;
+  if(p.hint){
+    var hit=vmServer.filter(function(f){return vmKind(f)==="hd"&&p.hint.test(f.name)})[0];
+    if(hit){$("#vmhd").value="srv:"+hit.name;note="Found "+hit.name+" in the vm_images folder. Ready to start."}
+    else note="No "+p.name+" disk image found. Put one in the vm_images folder and name it "+p.file+", or choose a file from your computer with “browse”. Rel Zone doesn't include any operating system.";
+  }else note="Pick the drives and settings you want.";
+  $("#vmnote").textContent=note;
+}
+async function vmLoadList(){
+  try{vmServer=await (await fetch("/api/vm/images",{cache:"no-store"})).json()}catch(_){vmServer=[]}
+  ["hd","cd","fd"].forEach(vmFill);vmApplyPreset();vmCheck();
+}
+$("#vmpreset").onchange=function(){vmApplyPreset();vmCheck()};
+["vmhd","vmcd","vmfd"].forEach(function(id){$("#"+id).addEventListener("change",vmCheck)});
+$("#vmauto").checked=vmPrefGet().auto!==false;$("#vmauto").onchange=function(){vmPrefSet({auto:this.checked})};
+[["hd","vmhdfile"],["cd","vmcdfile"],["fd","vmfdfile"]].forEach(function(x){
+  $("#"+x[1]).onchange=function(){var f=this.files[0];if(!f)return;vmFiles[x[0]]=f;vmFill(x[0]);$("#vm"+x[0]).value="loc";this.value="";vmCheck()}
+});
+function vmImage(kind){
+  var v=$("#vm"+kind).value;
+  if(v==="none")return null;
+  if(v==="loc")return vmFiles[kind].arrayBuffer().then(function(b){return {buffer:b}});
+  if(v.indexOf("blank:")===0)return Promise.resolve({buffer:new ArrayBuffer(Number(v.slice(6))*1048576)});
+  var name=v.slice(4),f=vmServer.filter(function(x){return x.name===name})[0],url="/vm/images/"+encodeURIComponent(name);
+  return Promise.resolve(f&&f.size>314572800?{url:url,async:true,size:f.size}:{url:url});   /* very big disks load on demand */
+}
+function vmClearScreen(){var sc=$("#vmscreen"),t=sc.querySelector("div"),c=sc.querySelector("canvas");if(t)t.textContent="";if(c){c.style.display="none";c.width=0;c.height=0}}   /* no leftovers from the previous machine */
+function vmBusySet(on){vmBusy=on;document.body.classList.toggle("vmbusy",on)}
+function vmPrefGet(){try{return JSON.parse(localStorage.getItem("oxy-vm")||"{}")}catch(_){return {}}}
+function vmPrefSet(o){try{localStorage.setItem("oxy-vm",JSON.stringify(Object.assign(vmPrefGet(),o)))}catch(_){}}
+var vmInspCache={},vmAutoTried=false,vmWatchT=null;
+var VM_CONVERT=" Convert it to a raw image first, for example: qemu-img convert -O raw yourdisk yourdisk.img";
+function vmDescribe(b){
+  function at(o,str){for(var i=0;i<str.length;i++)if(b[o+i]!==str.charCodeAt(i))return false;return true}
+  var head=String.fromCharCode.apply(null,Array.prototype.slice.call(b.subarray(0,96)));
+  if(at(0,"QFI")&&b[3]===0xFB)return{type:"qcow2",ok:false,wrong:true,msg:"This is a QEMU qcow2 file, which the browser can't read directly."+VM_CONVERT};
+  if(at(0,"KDMV")||at(0,"# Disk DescriptorFile"))return{type:"vmdk",ok:false,wrong:true,msg:"This is a VMware (vmdk) file, which the browser can't read directly."+VM_CONVERT};
+  if(at(0,"conectix"))return{type:"vhd",ok:false,wrong:true,msg:"This is a Virtual PC / Hyper-V (vhd) file, which the browser can't read directly."+VM_CONVERT};
+  if(head.indexOf("VirtualBox Disk Image")>-1)return{type:"vdi",ok:false,wrong:true,msg:"This is a VirtualBox (vdi) file, which the browser can't read directly."+VM_CONVERT};
+  if(at(0x8001,"CD001"))return{type:"iso",ok:false,wrong:true,cd:true,msg:"This is a CD-ROM image (an installer ISO), not an installed hard disk. Put it in the CD-ROM slot; to install from it, also use a “new empty disk”."};
+  if(b[0]===0x50&&b[1]===0x4B)return{type:"zip",ok:false,wrong:true,msg:"This is a zip archive. Unzip it first and use the disk image inside."};
+  if(b[0]===0x37&&b[1]===0x7A&&b[2]===0xBC)return{type:"7z",ok:false,wrong:true,msg:"This is a 7-Zip archive. Extract it first and use the disk image inside."};
+  if(at(0,"Rar!"))return{type:"rar",ok:false,wrong:true,msg:"This is a RAR archive. Extract it first and use the disk image inside."};
+  if(b[0]===0x1F&&b[1]===0x8B)return{type:"gzip",ok:false,wrong:true,msg:"This file is compressed (gzip). Decompress it first."};
+  if(b[510]===0x55&&b[511]===0xAA)return{type:"mbr",ok:true,msg:"looks like a bootable disk"};
+  var zero=true;for(var i=0;i<512;i++)if(b[i]){zero=false;break}
+  return{type:zero?"zeros":"unknown",ok:false,msg:zero?"This disk is empty (all zeros), so there is nothing to boot.":"This doesn't look like a bootable disk (no boot sector). It may be a single partition, a data file, or a format the emulator can't use."};
+}
+async function vmInspect(kind){
+  var v=$("#vm"+kind).value;if(v==="none")return null;
+  if(v.indexOf("blank:")===0)return{type:"blank",ok:false,blank:true,name:"new empty disk",size:Number(v.slice(6))*1048576,msg:"A new empty disk has nothing on it yet; it needs a CD or floppy to install from."};
+  var name,size,key,buf;
+  if(v==="loc"){var f=vmFiles[kind];name=f.name;size=f.size;key="loc:"+f.name+f.size+f.lastModified;buf=vmInspCache[key]||(vmInspCache[key]=await f.slice(0,36864).arrayBuffer())}
+  else{name=v.slice(4);var sf=vmServer.filter(function(x){return x.name===name})[0];size=sf?sf.size:0;key="srv:"+name+size;
+    if(!vmInspCache[key]){var r=await fetch("/vm/images/"+encodeURIComponent(name),{headers:{Range:"bytes=0-36863"},cache:"no-store"});vmInspCache[key]=await r.arrayBuffer()}
+    buf=vmInspCache[key]}
+  var d=vmDescribe(new Uint8Array(buf));d.name=name;d.size=size;return d;
+}
+async function vmCheck(){
+  var box=$("#vmcheck");box.innerHTML="";
+  function line(t,bad){var d=document.createElement("div");d.textContent=t;if(bad)d.style.color="#d9534f";box.appendChild(d)}
+  for(var k=0;k<3;k++){var kind=["hd","cd","fd"][k],lab={hd:"Hard disk",cd:"CD-ROM",fd:"Floppy"}[kind],d=null;
+    try{d=await vmInspect(kind)}catch(_){d=null}
+    if(!d)continue;
+    if(kind==="hd"){if(d.ok)line("✓ "+lab+": "+d.name+" ("+vmMb(d.size)+") "+d.msg);else if(d.blank)line("ℹ "+lab+": new empty disk ("+vmMb(d.size)+"). It needs a CD or floppy to install from.");else line("⚠ "+lab+": "+d.name+": "+d.msg,true)}
+    else if(kind==="cd"){line((d.type==="iso"?"✓ ":"ℹ ")+lab+": "+d.name+(d.type==="iso"?" is a CD image":" isn't recognised as a CD image (it will still be tried)"))}
+    else line((d.ok?"✓ ":"ℹ ")+lab+": "+d.name+(d.ok?" has a boot sector":" has no boot sector (fine as a data floppy, but don't boot from it)"));
+  }
+}
+function vmStatus(t){$("#vmstatus").textContent=t}
+function vmFocus(on){
+  if(!vmEmu)return;
+  try{vmEmu.keyboard_set_enabled(on);vmEmu.mouse_set_enabled(on)}catch(_){}
+  $("#vmscreen").classList.toggle("vmfocus",!!on);
+}
+async function vmStart(){
+  var hd,cd,fd;
+  var note=$("#vmstartnote");note.style.color="";
+  var hdI=null;try{hdI=await vmInspect("hd")}catch(_){}
+  var other=$("#vmcd").value!=="none"||$("#vmfd").value!=="none";
+  if(hdI&&(hdI.wrong||(!hdI.ok&&!other))){note.style.color="#d9534f";note.textContent=hdI.blank?"A new empty disk has nothing to boot. Add a CD or floppy to install from, or choose a disk image.":(hdI.name+": "+hdI.msg);vmCheck();return}
+  try{hd=await vmImage("hd");cd=await vmImage("cd");fd=await vmImage("fd")}catch(e){note.textContent="Couldn't read that file.";return}
+  if(!hd&&!cd&&!fd){var pp=VMP[$("#vmpreset").value];note.style.color="#d9534f";note.textContent="Nothing to start yet. Put a disk image in the vm_images folder"+(pp&&pp.file?" (named "+pp.file+")":"")+" or choose one with “browse”.";return}
+  note.textContent="";vmClearScreen();
+  if($("#vmpreset").value!=="custom"||vmServer.some(function(f){return"srv:"+f.name===$("#vmhd").value}))vmPrefSet({last:{preset:$("#vmpreset").value,hd:$("#vmhd").value,mem:$("#vmmem").value,vga:$("#vmvga").value,boot:$("#vmboot").value}});$("#vmsetup").hidden=true;$("#vmrun").hidden=false;vmStatus("loading the emulator…");
+  try{if(typeof V86==="undefined")await loadScript("/vm/engine/libv86.js")}catch(e){vmStatus("Couldn't load the emulator.");return}
+  var cfg={wasm_path:"/vm/engine/v86.wasm",memory_size:Number($("#vmmem").value)*1048576,vga_memory_size:Number($("#vmvga").value)*1048576,
+    screen_container:$("#vmscreen"),bios:{url:"/vm/engine/seabios.bin"},vga_bios:{url:"/vm/engine/vgabios.bin"},
+    boot_order:{auto:0,hd:0x132,cd:0x123,fd:0x321}[$("#vmboot").value],autostart:true};
+  if(hd)cfg.hda=hd;if(cd)cfg.cdrom=cd;if(fd)cfg.fda=fd;
+  try{vmEmu=new V86(cfg)}catch(e){vmStatus("The emulator couldn't start: "+(e&&e.message||e));return}
+  var emu=vmEmu;vmBusySet(true);
+  emu.add_listener("download-progress",function(e){if(e.lengthComputable&&e.total)vmStatus("loading "+(e.file_name||"disk")+" … "+Math.round(e.loaded/e.total*100)+"%")});
+  emu.add_listener("download-error",function(e){vmStatus("Couldn't load "+((e&&e.file_name)||"a file")+". Check that it's in the vm_images folder.")});
+  emu.add_listener("emulator-ready",function(){vmFocus(false)});
+  emu.add_listener("emulator-started",function(){vmFocus(false);vmStatus("Running. Click the screen to use your keyboard and mouse; click anywhere outside it to give them back (Esc frees the mouse).");
+    clearInterval(vmWatchT);vmWatchT=setInterval(function(){var t=($("#vmscreen > div")||{}).textContent||"";
+      if(/No bootable device/i.test(t))vmStatus("The machine started but found nothing to boot from. Shut down, then choose a raw, bootable hard disk image (an installed Windows, not an installer ISO). The notes above the Start button say what each file is.")},2000)});
+}
+async function vmExit(){
+  if(!vmEmu)return;var e=vmEmu;vmEmu=null;vmAutoPaused=false;
+  clearInterval(vmWatchT);vmBusySet(false);try{vmFocus(false)}catch(_){}try{await e.destroy()}catch(_){}vmClearScreen();
+  $("#vmrun").hidden=true;$("#vmsetup").hidden=false;vmStatus("");vmLoadList();
+}
+async function vmAutoMaybe(){
+  if(vmAutoTried||vmEmu)return;vmAutoTried=true;
+  if(!$("#vmauto").checked)return;
+  var pref=vmPrefGet(),pick=null,last=pref.last;
+  if(last&&last.hd&&last.hd.indexOf("srv:")===0&&vmServer.some(function(f){return"srv:"+f.name===last.hd}))pick=last;
+  if(!pick){["win95","win98"].some(function(k){var hit=vmServer.filter(function(f){return vmKind(f)==="hd"&&VMP[k].hint.test(f.name)})[0];if(hit){pick={preset:k,hd:"srv:"+hit.name};return true}})}
+  if(!pick){var hds=vmServer.filter(function(f){return vmKind(f)==="hd"});if(hds.length===1)pick={preset:"custom",hd:"srv:"+hds[0].name}}
+  if(!pick)return;
+  $("#vmpreset").value=pick.preset;vmApplyPreset();$("#vmhd").value=pick.hd;
+  if(pick.mem){$("#vmmem").value=pick.mem;$("#vmvga").value=pick.vga;$("#vmboot").value=pick.boot}
+  if(pick.preset==="custom")$("#vmboot").value="hd";
+  await vmCheck();vmStart();
+}
+function vmEnter(){vmLoadList().then(vmAutoMaybe);if(vmEmu)vmBusySet(true);if(vmEmu&&vmAutoPaused){vmAutoPaused=false;try{vmEmu.run()}catch(_){}}}
+function vmLeave(){vmBusySet(false);if(!vmEmu)return;vmFocus(false);try{if(vmEmu.is_running()){vmEmu.stop();vmAutoPaused=true}}catch(_){}}
+$("#vmstart").onclick=vmStart;$("#vmexit").onclick=vmExit;
+$("#vmreset").onclick=function(){if(vmEmu)vmEmu.restart()};
+$("#vmpause").onclick=function(){if(!vmEmu)return;vmAutoPaused=false;if(vmEmu.is_running()){vmEmu.stop();this.textContent="▶ resume"}else{vmEmu.run();this.textContent="⏸ pause"}};
+$("#vmcad").onclick=function(){if(vmEmu)vmEmu.keyboard_send_scancodes([0x1D,0x38,0x53,0x9D,0xB8,0xD3])};
+$("#vmfull").onclick=function(){if(vmEmu)vmEmu.screen_go_fullscreen()};
+$("#vmsave").onclick=async function(){
+  if(!vmEmu)return;vmStatus("saving…");
+  try{var buf=await vmEmu.save_state(),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf]));a.download="rel-zone-vm.v86state";document.body.appendChild(a);a.click();a.remove();vmStatus("Saved. “load state” brings the machine back exactly as it was (use the same disk).")}
+  catch(e){vmStatus("Couldn't save the state: "+(e&&e.message||e))}
+};
+$("#vmloadfile").onchange=async function(){
+  var f=this.files[0];this.value="";if(!f||!vmEmu)return;vmStatus("restoring…");
+  try{await vmEmu.restore_state(await f.arrayBuffer());vmStatus("Restored.")}catch(e){vmStatus("That state file doesn't fit this machine (use the same disk and memory settings).")}
+};
+$("#vmscreen").addEventListener("click",function(e){if(!vmEmu)return;vmFocus(true);if(e.isTrusted){try{vmEmu.lock_mouse()}catch(_){}}});   /* pointer lock only on a real click (browsers refuse it otherwise) */
+document.addEventListener("mousedown",function(e){if(vmEmu&&!$("#vmscreen").contains(e.target))vmFocus(false)},true);
+
+
+/* web: full in-browser proxy (Scramjet + Wisp), with the basic /proxy as a fallback */
+var mode=null,sj=null,sjFrame=null,sjInit=null;
+var LITE="BASIC proxy: JavaScript and cookies are OFF, games won't run. Open this site at http://localhost:"+(location.port||"5000")+" or over https for the full proxy";
+var wh=[],wi=-1,expect=null,wf=$("#wframe"),wbar=$("#wurl"),wst=$("#wstatus");
+function looksUrl(q){return /^https?:\/\//i.test(q)||/^[^\s\/]+\.[a-z]{2,}(\/\S*)?$/i.test(q)}
+function fullUrl(input){return /^https?:\/\//i.test(input)?input:looksUrl(input)?"https://"+input:S.engine+encodeURIComponent(input)}
+function liteUrl(input){
+  if(looksUrl(input))return /^https?:\/\//i.test(input)?input:"https://"+input;
+  var e=S.engine;
+  if(e.indexOf("duckduckgo")>-1)e="https://html.duckduckgo.com/html/?q=";
+  else if(e.indexOf("google")>-1)e="https://www.google.com/search?gbv=1&q=";
+  return e+encodeURIComponent(input);
+}
+function loadScript(src){return new Promise(function(res,rej){var t=document.createElement("script");t.src=src;t.onload=res;t.onerror=function(){rej(new Error("couldn't load "+src))};document.head.appendChild(t)})}
+function startProxy(){
+  if(sjInit)return sjInit;
+  sjInit=(async function(){
+    if(!window.isSecureContext||!("serviceWorker" in navigator))throw new Error("the full proxy needs https or http://localhost");
+    await loadScript("/scram/scramjet.all.js");await loadScript("/baremux/index.js");
+    sj=new ($scramjetLoadController().ScramjetController)({files:{wasm:"/scram/scramjet.wasm.wasm",all:"/scram/scramjet.all.js",sync:"/scram/scramjet.sync.js"}});
+    await sj.init();
+    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+    var conn=new BareMux.BareMuxConnection("/baremux/worker.js");
+    await conn.setTransport("/libcurl/index.mjs",[{websocket:(location.protocol==="https:"?"wss":"ws")+"://"+location.host+"/wisp/"}]);
+    sjFrame=sj.createFrame($("#sjframe"));
+    sjFrame.addEventListener("urlchange",function(e){wbar.value=e.url;wst.textContent="full proxy (JavaScript + cookies on) · "+e.url});
+    return true;
+  })();
+  sjInit.catch(function(){});
+  return sjInit;
+}
+function liteLoad(url){expect=url;wbar.value=url;wst.textContent="loading (basic proxy)…";wf.src="/proxy?url="+encodeURIComponent(url)}
+async function openWeb(input){
+  input=input.trim();if(!input)return;
+  show("web");wst.textContent="starting proxy…";
+  try{
+    await startProxy();
+    mode="sj";wf.hidden=true;$("#sjframe").hidden=false;
+    var u=fullUrl(input);wbar.value=u;wst.textContent="loading…";sjFrame.go(u);
+  }catch(err){
+    console.warn("full proxy unavailable:",err);
+    mode="lite";$("#sjframe").hidden=true;wf.hidden=false;
+    var t=liteUrl(input);wh=wh.slice(0,wi+1);wh.push(t);wi=wh.length-1;liteLoad(t);
+    wst.textContent=LITE+" ("+(err&&err.message||err)+")";
+  }
+}
+addEventListener("message",function(e){
+  if(mode!=="lite"||e.source!==wf.contentWindow||!e.data||!e.data.rz||typeof e.data.url!=="string")return;
+  var u=e.data.url;wbar.value=u;wst.textContent=LITE+" · "+u;
+  if(expect!==null){expect=null;wh[wi]=u}
+  else if(u!==wh[wi]){wh=wh.slice(0,wi+1);wh.push(u);wi=wh.length-1}
+});
+wf.onload=function(){if(mode==="lite"&&wst.textContent==="loading (basic proxy)…")wst.textContent="done"};
+$("#sjframe").onload=function(){if(mode==="sj"&&/^loading/.test(wst.textContent))wst.textContent="full proxy (JavaScript + cookies on) · "+wbar.value};
+$("#wgo").onclick=function(){openWeb(wbar.value)};
+wbar.onkeydown=function(e){if(e.key==="Enter")openWeb(wbar.value)};
+$("#wback").onclick=function(){if(mode==="sj")sjFrame.back();else if(wi>0){wi--;liteLoad(wh[wi])}};
+$("#wreload").onclick=function(){if(mode==="sj")sjFrame.reload();else if(wi>=0)liteLoad(wh[wi])};
+
+/* piano */
+var ac=null,notes=[["C",261.63,"a"],["D",293.66,"s"],["E",329.63,"d"],["F",349.23,"f"],["G",392,"g"],["A",440,"h"],["B",493.88,"j"],["C",523.25,"k"]];
+function play(f){
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
+    var o=ac.createOscillator(),g=ac.createGain();o.type=$("#wave").value;o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,ac.currentTime);g.gain.exponentialRampToValueAtTime(.3,ac.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+1.1);
+    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+1.2)}catch(e){}
+}
+var kb=$("#keys");
+notes.forEach(function(n){var k=document.createElement("div");k.className="key";k.innerHTML=n[0]+"<br>&nbsp;"+n[2];k.dataset.k=n[2];
+  function hit(){play(n[1]);k.classList.add("hit");setTimeout(function(){k.classList.remove("hit")},150)}
+  k.onpointerdown=hit;k._hit=hit;kb.appendChild(k)});
+addEventListener("keydown",function(e){
+  if($("#music").classList.contains("on")&&!e.repeat){var k=kb.querySelector('[data-k="'+e.key.toLowerCase()+'"]');if(k)k._hit()}});
+
+apply();
+})();
+</script>
+</body>
+</html>
